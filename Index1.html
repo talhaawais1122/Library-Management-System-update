@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library - Table</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">PureLogics Library</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="Index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="Index1.html">Data</a>
+                    </li>
+                </ul>
+                <form class="d-flex" id="searchForm">
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"
+                        id="searchInput">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Your Books</h1>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Book Name</th>
+                    <th scope="col">Author Name</th>
+                    <th scope="col">Types</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+
+            </tbody>
+        </table>
+
+        <div id="editFormContainer"></div>
+
+        <script>
+            function Book(BookName, AuthorName, types) {
+                this.BookName = BookName;
+                this.AuthorName = AuthorName;
+                this.types = types;
+            }
+
+            function deleteBook(index) {
+                let existingBooks = JSON.parse(localStorage.getItem('books')) || [];
+                existingBooks.splice(index, 1);
+                localStorage.setItem("books", JSON.stringify(existingBooks));
+                displayBooksFromLocalStorage();
+            }
+
+            function editBook(index) {
+                let existingBooks = JSON.parse(localStorage.getItem('books')) || [];
+                let book = existingBooks[index];
+
+                let editForm = document.createElement('form');
+                editForm.innerHTML = `
+                    <div class="container mb-3">
+
+                        <div class="container my-4">
+                            <h1>Edit book</h1>
+                       </div>
+                        <label for="editBookName" class="form-label">Book Name</label>
+                        <input type="text" class="form-control" id="editBookName" value="${book.BookName}">
+                    
+                    <div class="mb-3">
+                        <label for="editAuthorName" class="form-label">Author Name</label>
+                        <input type="text" class="form-control" id="editAuthorName" value="${book.AuthorName}">
+                    </div>
+
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Types</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="editType" id="editFiction" value="Fiction" ${
+                                book.types === "Fiction" ? "checked" : ""
+                            }>
+                            <label class="form-check-label" for="editFiction">
+                                Fiction
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="editType" id="editComputer" value="Computer" ${
+                                book.types === "Computer" ? "checked" : ""
+                            }>
+                            <label class="form-check-label" for="editComputer">
+                                Computer
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="editType" id="editCooking" value="Cooking" ${
+                                book.types === "Cooking" ? "checked" : ""
+                            }>
+                            <label class="form-check-label" for="editCooking">
+                                Cooking
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" onclick="saveEditedBook(${index})">Save</button>
+                </div>
+                `;
+
+                document.getElementById('editFormContainer').innerHTML = '';
+                document.getElementById('editFormContainer').appendChild(editForm);
+            }
+
+            function saveEditedBook(index) {
+                let existingBooks = JSON.parse(localStorage.getItem('books')) || [];
+                let book = existingBooks[index];
+
+                book.BookName = document.getElementById('editBookName').value;
+                book.AuthorName = document.getElementById('editAuthorName').value;
+                let editFiction = document.getElementById('editFiction');
+                let editComputer = document.getElementById('editComputer');
+                let editCooking = document.getElementById('editCooking');
+
+                if (editFiction.checked) {
+                    book.types = "Fiction";
+                } else if (editComputer.checked) {
+                    book.types = "Computer";
+                } else if (editCooking.checked) {
+                    book.types = "Cooking";
+                }
+
+                localStorage.setItem('books', JSON.stringify(existingBooks));
+                document.getElementById('editFormContainer').innerHTML = '';
+                displayBooksFromLocalStorage();
+            }
+
+            function displayBooksFromLocalStorage() {
+                let tableBody = document.getElementById('tableBody');
+                let existingBooks = JSON.parse(localStorage.getItem('books')) || [];
+                tableBody.innerHTML = "";
+
+                existingBooks.forEach((book, index) => {
+                    let uiString = `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${book.BookName}</td>
+                            <td>${book.AuthorName}</td>
+                            <td>${book.types}</td>
+                            <td>
+                                <button type="button" class="btn btn-primary" onclick="editBook(${index})">Edit</button>
+                                <button type="button" class="btn btn-danger" onclick="deleteBook(${index})">Delete</button>
+                            </td>
+                        </tr>`;
+
+                    tableBody.innerHTML += uiString;
+                });
+            }
+
+            function searchBooks() {
+                let input = document.getElementById("searchInput").value.toLowerCase();
+                let tableRows = document.getElementsByTagName("tr");
+
+                for (let i = 1; i < tableRows.length; i++) {
+                    let bookName = tableRows[i].getElementsByTagName("td")[1].textContent.toLowerCase();
+                    if (bookName.includes(input)) {
+                        tableRows[i].style.display = "";
+                    } else {
+                        tableRows[i].style.display = "none";
+                    }
+                }
+            }
+
+            document.getElementById("searchForm").addEventListener("submit", function (event) {
+                event.preventDefault();
+                searchBooks();
+            });
+
+            displayBooksFromLocalStorage();
+        </script>
+    </div>
+</body>
+
+</html>
